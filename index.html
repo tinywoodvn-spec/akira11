@@ -2,64 +2,77 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8">
-  <title>Demo Thông tin (LocalStorage)</title>
+  <title>Clone dan11.fun (LocalStorage)</title>
   <style>
     body { font-family: Arial, sans-serif; background:#f9f9f9; margin:0; padding:20px; }
     h1 { font-size:18px; margin-bottom:12px; }
-    .btn { padding:8px 12px; border:0; border-radius:6px; cursor:pointer; }
-    .btn-add { background:#2b6df6; color:#fff; margin-bottom:16px; }
-    .btn-del { background:#ff5c5c; color:#fff; margin-top:6px; }
-    .list { display:flex; flex-direction:column; gap:12px; }
-    .card { background:#fff; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,.1); padding:12px; }
-    .card p { margin:0; font-size:15px; }
+    .top-form { display:flex; gap:8px; margin-bottom:16px; }
+    .top-form input { flex:1; padding:8px; border:1px solid #ccc; border-radius:4px; }
+    .top-form button { padding:8px 16px; background:#2563eb; color:#fff; border:0; border-radius:4px; cursor:pointer; font-weight:bold; }
+    .card { background:#fff; border:1px solid #ddd; border-radius:4px; padding:12px; margin-bottom:16px; }
+    .card h3 { margin:0 0 8px; font-size:16px; display:flex; align-items:center; gap:6px; }
+    .card h3::before { content:"☁"; font-size:14px; }
+    .card input { width:100%; padding:6px; margin-bottom:8px; border:1px solid #ccc; border-radius:4px; }
+    .btn-del { width:100%; padding:10px; background:#dc2626; color:#fff; border:0; border-radius:4px; cursor:pointer; font-weight:bold; }
   </style>
 </head>
 <body>
-  <h1>Thông tin thẻ</h1>
+  <h1>+ Thêm thẻ mới</h1>
+  <div class="top-form">
+    <input id="val1" type="text" placeholder="Giá trị 1">
+    <input id="val2" type="text" placeholder="Giá trị 2">
+    <button id="addBtn">+</button>
+  </div>
 
-  <button id="addBtn" class="btn btn-add">+ Thêm thẻ mới</button>
-
-  <div id="list" class="list"></div>
+  <div id="list"></div>
 
   <script>
-    const listEl = document.getElementById("list");
-    const addBtn = document.getElementById("addBtn");
     let cards = JSON.parse(localStorage.getItem("cards") || "[]");
+    let counter = Number(localStorage.getItem("counter") || 0);
 
     function save() {
       localStorage.setItem("cards", JSON.stringify(cards));
+      localStorage.setItem("counter", counter);
     }
 
     function render() {
-      listEl.innerHTML = "";
-      if(cards.length === 0){
-        listEl.innerHTML = "<p style='color:#777'>Chưa có thẻ nào</p>";
-        return;
-      }
+      const list = document.getElementById("list");
+      list.innerHTML = "";
       cards.forEach((c,i)=>{
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
-          <p>Thông tin #${i+1}</p>
-          <button class="btn btn-del" onclick="removeCard(${i})">Xoá</button>
+          <h3>Thông tin #${c.number}</h3>
+          <input type="text" value="${c.val1}" readonly>
+          <input type="text" value="${c.val2}" readonly>
+          <button class="btn-del" onclick="removeCard(${i})">Xoá</button>
         `;
-        listEl.appendChild(div);
+        list.appendChild(div);
       });
     }
 
-    function removeCard(index){
-      if(!confirm("Xóa thẻ này?")) return;
-      cards.splice(index,1);
-      save(); render();
+    function addCard() {
+      const v1 = document.getElementById("val1").value.trim();
+      const v2 = document.getElementById("val2").value.trim();
+      if(!v1 && !v2) return alert("Nhập ít nhất 1 giá trị");
+      counter++;
+      cards.push({number:counter, val1:v1, val2:v2});
+      save();
+      render();
+      document.getElementById("val1").value = "";
+      document.getElementById("val2").value = "";
     }
 
-    addBtn.addEventListener("click", ()=>{
-      cards.push({text:`Thông tin #${cards.length+1}`});
-      save(); render();
-    });
+    function removeCard(i) {
+      if(!confirm("Xoá thẻ này?")) return;
+      cards.splice(i,1);
+      save();
+      render();
+    }
+
+    document.getElementById("addBtn").addEventListener("click", addCard);
 
     render();
-    window.removeCard = removeCard;
   </script>
 </body>
 </html>
